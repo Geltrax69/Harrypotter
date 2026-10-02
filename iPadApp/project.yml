@@ -1,0 +1,103 @@
+name: LivingPage
+options:
+  bundleIdPrefix: com.livingpage
+  deploymentTarget:
+    iOS: "27.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    TARGETED_DEVICE_FAMILY: "2" # iPad only
+    IPHONEOS_DEPLOYMENT_TARGET: "27.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: D676SQ267J # Simpedu LLP
+
+targets:
+  LivingPage:
+    type: application
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources:
+      - path: Sources
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: Living Page
+        UIAppFonts:
+          - CedarvilleCursive-Regular.ttf
+          - JustAnotherHand-Regular.ttf
+          - CinzelDecorative-Regular.ttf
+          - CinzelDecorative-Bold.ttf
+          - Awesome.ttf
+          - Crustaceans-SignatureDEMO-Regular.otf
+          - BrittanySignatureScript.ttf
+          - Amsterdam.ttf
+          - Always Classy.ttf
+          - Priestacy.otf
+          - Amsterdam Handwriting.ttf
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIRequiredDeviceCapabilities:
+          - arm64
+        NSPencilInteractionUsageDescription: Living Page uses Apple Pencil to write your question.
+        NSLocalNetworkUsageDescription: Living Page connects to a Living Page answer service you run on your local network during development.
+        NSAppTransportSecurity:
+          # Allow direct connections to local hosts (local HTTPS and mDNS/.local)
+          # for development. This does NOT enable arbitrary internet cleartext:
+          # NSAllowsArbitraryLoads is deliberately absent/false.
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.livingpage.app
+        TARGETED_DEVICE_FAMILY: "2"
+        SWIFT_STRICT_CONCURRENCY: complete
+
+  LivingPageTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources:
+      - path: Tests
+    dependencies:
+      - target: LivingPage
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.livingpage.tests
+        TARGETED_DEVICE_FAMILY: "2"
+        SWIFT_STRICT_CONCURRENCY: complete
+        GENERATE_INFOPLIST_FILE: YES
+
+  LivingPageUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "27.0"
+    sources:
+      - path: UITests
+    dependencies:
+      - target: LivingPage
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.livingpage.uitests
+        TARGETED_DEVICE_FAMILY: "2"
+        SWIFT_STRICT_CONCURRENCY: complete
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  LivingPage:
+    build:
+      targets:
+        LivingPage: all
+        LivingPageTests: [test]
+        LivingPageUITests: [test]
+    test:
+      targets:
+        - LivingPageTests
+        - LivingPageUITests
+      gatherCoverageData: false

@@ -1,0 +1,30 @@
+{
+  "name": "living-page-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Secure TypeScript backend for Living Page: brokers confirmed recognized text to a concise OpenRouter-generated answer.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node --env-file=.env dist/server.js",
+    "dev": "node --env-file=.env --watch --loader ts-node/esm src/server.ts",
+    "test": "node --test --loader ts-node/esm test/*.test.ts"
+  },
+  "dependencies": {
+    "fastify": "4.28.1",
+    "@fastify/helmet": "11.1.1",
+    "@fastify/rate-limit": "9.1.0",
+    "pino": "9.4.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "20.16.11",
+    "ts-node": "10.9.2",
+    "typescript": "5.6.3"
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-01T02:56:00+05:30",
+  "title": "Design System: Living Page",
+  "extensions": {
+    "colorMeta": {
+      "indigo-light": { "role": "primary", "displayName": "Deep Indigo (light)", "canonical": "#353c73", "note": "System voice: answer ink, status/error, primary action, selected tool, indigo rules.", "tonalRamp": ["#14163a", "#1e2148", "#282d5a", "#353c73", "#4a5390", "#6670ad", "#8a92d4", "#b3b9e6"] },
+      "indigo-dark": { "role": "primary", "displayName": "Deep Indigo (dark)", "canonical": "#8a92d4", "pairsWith": "indigo-light", "tonalRamp": ["#2a2f5c", "#3a4176", "#4d5490", "#626aa8", "#7a82c2", "#8a92d4", "#a7ade0", "#c8ccee"] },
+      "sheet-light": { "role": "neutral", "displayName": "Cool Mineral Paper — Sheet (light)", "canonical": "#f4f5f7", "note": "Writing surface; fills the whole page." },
+      "sheet-dark": { "role": "neutral", "displayName": "Cool Mineral Paper — Sheet (dark)", "canonical": "#16181b", "pairsWith": "sheet-light" },
+      "sheet-edge-light": { "role": "neutral", "displayName": "Sheet Edge (light)", "canonical": "#e6e8ec", "note": "Recessed tonal layer for slips, control capsule, calibration pad." },
+      "sheet-edge-dark": { "role": "neutral", "displayName": "Sheet Edge (dark)", "canonical": "#212327", "pairsWith": "sheet-edge-light" },
+      "graphite-light": { "role": "neutral", "displayName": "Graphite (light)", "canonical": "#292c32", "note": "The hand's ink and primary text; default tool tint." },
+      "graphite-dark": { "role": "neutral", "displayName": "Graphite (dark)", "canonical": "#e0e2e6", "pairsWith": "graphite-light" },
+      "graphite-soft-light": { "role": "neutral", "displayName": "Graphite Soft (light)", "canonical": "#636872", "note": "Secondary labels, status line, faint body rules." },
+      "graphite-soft-dark": { "role": "neutral", "displayName": "Graphite Soft (dark)", "canonical": "#9ca0a8", "pairsWith": "graphite-soft-light" }
+    },
+    "colorCompanions": {
+      "indigoSoft": { "displayName": "Indigo Soft (translucent)", "light": "rgba(53,60,115,0.10)", "dark": "rgba(138,146,212,0.16)", "note": "Faintest indigo washes only." }
+    },
+    "typographyMeta": {
+      "status": { "displayName": "Status", "purpose": "Single top-bar status line; graphite-soft normally, indigo on error.", "textStyle": ".subheadline", "weight": "medium" },
+      "confirmation-title": { "displayName": "Confirmation Title", "purpose": "Recognized question read back in quotes.", "textStyle": ".title3", "weight": "regular" },
+      "recovery-headline": { "displayName": "Recovery Headline", "purpose": "Error message on the recovery slip, tinted indigo.", "textStyle": ".headline", "weight": "regular" },
+      "control-label": { "displayName": "Control Label", "purpose": "Button labels, picker label, calibration prompts/captions.", "textStyle": ".body / .caption", "weight": "regular" },
+      "answer-ink": { "displayName": "Answer Ink", "purpose": "The answer, drawn as real vector PKStroke ink in indigo — NOT type.", "isType": false }
+    },
+    "shadows": [
+      { "name": "none", "value": "none", "purpose": "No drop shadows. Depth is tonal layering of native materials plus 1pt hairline rules only (The Flat-Paper Rule)." }
+    ],
+    "materials": [
+      { "name": "sheet", "purpose": "Full-bleed cool mineral paper; ignores safe areas." },
+      { "name": "sheet-edge", "purpose": "Recessed tonal fill for slips, tool capsule, calibration pad — conveys depth without shadow." },
+      { "name": "body-rule", "value": "1pt, graphite-soft @ 14% opacity, 44pt rhythm", "purpose": "Horizontal paper rules behind all ink; non-interactive, accessibility-hidden." },
+      { "name": "margin-rule", "value": "1pt, indigo @ 16% opacity, x=56pt", "purpose": "Left margin rule." }
+    ],
+    "motion": [
+      { "name": "slip-enter", "value": "move(edge:.bottom) + opacity", "purpose": "Confirmation/recovery slips rise from where the writing is.", "reduceMotionFallback": "opacity fade only" },
+      { "name": "answer-reveal-stroke", "value": "~60fps, basePointsPerFrame 2.2, targetMaxDuration 15s, maxPointsPerFrame 64", "purpose": "Per-stroke progressive reveal of answer ink in true drawing order; long answers scale points-per-frame up to stay within the bounded 15s target without changing stroke order." },
+      { "name": "answer-reveal-reduced-line", "value": "line-by-line, ~120ms per line beat", "purpose": "Reduce Motion: reveal whole lines instead of per-stroke motion." },
+      { "name": "answer-reveal-reduced-immediate", "value": "instant showComplete", "purpose": "Reduce Motion (immediate mode) / recompose after style change once a reveal already completed." }
+    ],
+    "adaptation": [
+      { "name": "action-row", "strategy": "ViewThatFits(in:.horizontal)", "primary": "HStack row (gap 12pt)", "fallback": "VStack stack (gap 8pt)", "trigger": "labels too wide for width or large Dynamic Type", "invariant": "44pt hit targets preserved in both layouts", "note": "There are no pixel breakpoints; adaptation is content/Dynamic-Type driven." },
+      { "name": "scroll-sync", "strategy": "single scrollable question canvas publishes contentOffset; answer canvas mirrors it", "invariant": "answer pinned in the question's absolute page coordinate space below the question; ~240pt trailing margin reserved" }
+    ],
+    "spatialConstants": [
+      { "name": "outer-inset", "value": "24pt" },
+      { "name": "top-bar-top-pad", "value": "12pt" },
+      { "name": "slip-radius", "value": "18pt (continuous)" },
+      { "name": "pad-radius", "value": "14pt (continuous)" },
+      { "name": "rule-rhythm", "value": "44pt baseline-to-baseline" },
+      { "name": "margin-x", "value": "56pt" },
+      { "name": "hit-target", "value": "44pt minimum" },
+      { "name": "calibration-pad-height", "value": "200pt fixed" }
+    ],
+    "presetHands": [
+      { "name": "Upright", "raw": "uprightOpen", "displayName": "Upright", "metrics": { "emHeight": 40, "slant": 0.0, "letterSpacing": 0.10, "lineHeight": 1.65 }, "character": "Tall, vertical, generous, minimal shear." },
+      { "name": "Slanted", "raw": "quickSlanted", "displayName": "Slanted", "metrics": { "emHeight": 38, "slant": 0.22, "letterSpacing": 0.04, "lineHeight": 1.55 }, "character": "Fast rightward slant, tighter tracking, more variation." },
+      { "name": "Rounded", "raw": "compactRounded", "displayName": "Rounded", "metrics": { "emHeight": 34, "slant": 0.05, "letterSpacing": 0.02, "lineHeight": 1.42 }, "character": "Small, dense, corner-softened." },
+      { "name": "Personal", "raw": "personal", "displayName": "Personal", "note": "Locally calibrated hand; stroke geometry stays on-device." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Ask Kiro (Primary Action)",
+      "kind": "button",
+      "refersTo": "button-ask-kiro",
+      "description": "The system-voice primary action inside the confirmation/recovery slips. Documentation-only HTML/CSS approximation of a native SwiftUI .borderedProminent capsule — the production control is SwiftUI, not HTML.",
+      "html": "<button class=\"ds-btn-ask-kiro\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16V8M8 12l4-4 4 4\"/></svg><span>Ask Kiro</span></button>",
+      "css": ".ds-btn-ask-kiro { display:inline-flex; align-items:center; gap:8px; justify-content:center; min-height:44px; padding:0 20px; border:none; border-radius:9999px; background:#353c73; color:#f4f5f7; font:500 17px -apple-system,'SF Pro',sans-serif; } .ds-btn-ask-kiro:active { filter:brightness(1.08); }"
+    },
+    {
+      "name": "Keep Writing (Neutral Action)",
+      "kind": "button",
+      "refersTo": "button-keep-writing",
+      "description": "Neutral bordered action. Documentation-only approximation of a native SwiftUI .bordered capsule tinted graphite.",
+      "html": "<button class=\"ds-btn-keep-writing\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M4 20l4-1 10-10-3-3L5 16z\"/></svg><span>Keep Writing</span></button>",
+      "css": ".ds-btn-keep-writing { display:inline-flex; align-items:center; gap:8px; justify-content:center; min-height:44px; padding:0 20px; border:none; border-radius:9999px; background:rgba(41,45,50,0.12); color:#292c32; font:400 17px -apple-system,'SF Pro',sans-serif; } .ds-btn-keep-writing:active { background:rgba(41,45,50,0.20); }"
+    },
+    {
+      "name": "Start Over (Destructive Action)",
+      "kind": "button",
+      "refersTo": "button-start-over",
+      "description": "Destructive bordered action (system red). Documentation-only approximation of a native SwiftUI .bordered destructive-role capsule.",
+      "html": "<button class=\"ds-btn-start-over\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 12a9 9 0 109-9v0M3 12v-4M3 12h4\"/></svg><span>Start Over</span></button>",
+      "css": ".ds-btn-start-over { display:inline-flex; align-items:center; gap:8px; justify-content:center; min-height:44px; padding:0 20px; border:none; border-radius:9999px; background:rgba(41,45,50,0.12); color:#ff3b30; font:400 17px -apple-system,'SF Pro',sans-serif; } .ds-btn-start-over:active { background:rgba(255,59,48,0.14); }"
+    },
+    {
+      "name": "Tool Control Cluster",
+      "kind": "custom",
+      "refersTo": "tool-button",
+      "description": "Bottom-trailing pen/eraser/clear cluster inside a sheet-edge capsule; each button 44x44pt, selected tool tints indigo. Documentation-only approximation of native SwiftUI .bordered buttons in a Capsule.",
+      "html": "<div class=\"ds-tool-cluster\"><button class=\"ds-tool ds-tool-selected\" aria-label=\"Pen\">A</button><button class=\"ds-tool\" aria-label=\"Eraser\">&#9671;</button><button class=\"ds-tool\" aria-label=\"Clear\">&#128465;</button></div>",
+      "css": ".ds-tool-cluster { display:inline-flex; gap:8px; padding:6px; border-radius:9999px; background:#e6e8ec; } .ds-tool { width:44px; height:44px; border:none; border-radius:9999px; background:rgba(41,45,50,0.10); color:#292c32; font:500 18px -apple-system,'SF Pro',sans-serif; } .ds-tool-selected { background:rgba(53,60,115,0.14); color:#353c73; }"
+    },
+    {
+      "name": "Confirmation Slip",
+      "kind": "card",
+      "refersTo": "confirmation-slip",
+      "description": "Inline slip that reads the recognized text back ('I read…') with no editable field and offers Ask Kiro / Keep Writing / Start Over. Documentation-only approximation; production is a SwiftUI RoundedRectangle(cornerRadius:18, style:.continuous) filled with the sheet-edge tone. Actions use ViewThatFits (horizontal row → vertical stack).",
+      "html": "<div class=\"ds-slip\"><span class=\"ds-slip-lead\">I read\u2026</span><p class=\"ds-slip-title\">\u201CWhat lives on a living page?\u201D</p><div class=\"ds-slip-actions\"><button class=\"ds-btn-ask-kiro\">Ask Kiro</button><button class=\"ds-btn-keep-writing\">Keep Writing</button><button class=\"ds-btn-start-over\">Start Over</button></div></div>",
+      "css": ".ds-slip { display:flex; flex-direction:column; gap:16px; padding:20px; border-radius:18px; background:#e6e8ec; max-width:560px; } .ds-slip-lead { font:500 15px -apple-system,'SF Pro',sans-serif; color:#636872; } .ds-slip-title { margin:0; font:400 20px -apple-system,'SF Pro',sans-serif; color:#292c32; } .ds-slip-actions { display:flex; gap:12px; flex-wrap:wrap; }"
+    },
+    {
+      "name": "Recovery Slip",
+      "kind": "card",
+      "refersTo": "recovery-slip",
+      "description": "Failure slip with an indigo headline error, preserved recognized text, and actions that adapt to the failure (a 'Try Again' primary appears only for retryable network errors). Documentation-only approximation; production is a SwiftUI RoundedRectangle(cornerRadius:18) sheet-edge fill.",
+      "html": "<div class=\"ds-slip\"><span class=\"ds-recovery-msg\">\u26A0 Couldn\u2019t reach Kiro. Check your connection.</span><p class=\"ds-recovery-preserved\">\u201CWhat lives on a living page?\u201D</p><div class=\"ds-slip-actions\"><button class=\"ds-btn-ask-kiro\">Try Again</button><button class=\"ds-btn-keep-writing\">Keep Writing</button><button class=\"ds-btn-start-over\">Start Over</button></div></div>",
+      "css": ".ds-recovery-msg { font:400 17px -apple-system,'SF Pro',sans-serif; color:#353c73; } .ds-recovery-preserved { margin:0; font:400 15px -apple-system,'SF Pro',sans-serif; color:#636872; }"
+    },
+    {
+      "name": "Answer Ink",
+      "kind": "custom",
+      "refersTo": "answer-ink",
+      "description": "The defining component: the answer drawn as real vector PKStroke ink in deep indigo, revealed progressively in true drawing order, layered in the same page as the question. It is NEVER a font, Text, raster, or outline. The snippet below is a documentation-only visual stand-in and does not represent the production render path (SwiftUI + PencilKit).",
+      "html": "<svg class=\"ds-answer-ink\" viewBox=\"0 0 320 60\" aria-label=\"Answer ink (documentation-only stand-in)\"><path d=\"M8 40 q10 -24 20 0 q10 24 20 0 M56 20 v20 M56 20 q14 -6 14 10 M84 40 q10 -22 18 -2 q4 10 12 2\" fill=\"none\" stroke=\"#353c73\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>",
+      "css": ".ds-answer-ink { display:block; width:320px; height:60px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Living Graphite Folio",
+    "overview": "Living Page is one quiet sheet of cool mineral paper you write a question onto by hand and watch answer itself. It refuses the chat category default outright: there is no message list, no card grid, no typing field, no send box. The page IS both the input and the output. Graphite ink carries everything the hand makes; deep indigo is reserved for the system's voice — the status line and the answer, which is written as real vector ink in the same synchronized page plane as the question rather than set as UI text. Native SF typography and SF Symbols do the plumbing so the interface itself stays silent and the ink is the only thing that speaks.\n\nThe system is restrained to the point of near-invisibility at rest. On launch the whole sheet is the surface: a faint ruled body with a left-margin rule, a single quiet status line (\"Write a question.\"), the style picker, and the bottom-trailing pen/eraser/clear controls. Nothing else competes; there is no onboarding card, no modal, no keyboard. Controls are quiet, standard, HIG-native, and physically large enough for a hand holding a Pencil. The magic is meant to come entirely from authentic ink behavior — real strokes revealing themselves in indigo below the question — not from ornament, glow, or novelty effects.\n\nDepth is expressed by tonal layering of native materials rather than by shadow craft: the sheet, a slightly recessed sheet edge, and quiet indigo/graphite rules stack to read as one continuous piece of paper. Both light and dark are first-class; every color is authored as a light/dark pair so the folio reads as the same sheet under either appearance.",
+    "keyCharacteristics": [
+      "One sheet: the page is simultaneously the question input and the answer output.",
+      "Graphite for the hand, deep indigo for the system's single voice.",
+      "The answer is real vector ink (PKStroke), never a font or Text.",
+      "Quiet native/HIG controls with 44pt hit targets; nothing competes with the ink.",
+      "Light and dark authored as equal pairs; flat tonal paper, no parchment, no franchise imagery."
+    ],
+    "rules": [
+      { "name": "The One-Voice Indigo Rule", "body": "Deep indigo belongs to the system alone. It appears only where the app is speaking — the answer ink, the status/error line, the primary confirm/retry action, calibration progress and rules. The hand never writes in indigo; graphite is the human, indigo is the page answering back. Its rarity is what makes the answer feel alive.", "section": "colors" },
+      { "name": "The Ink-Not-Type Rule", "body": "The answer is never a font, Text, raster image, or glyph outline. It is the exact PKDrawing produced by the ink compositor, revealed as real vector strokes in the same synchronized page plane as the question. System type is allowed only for controls, status, and labels — never for the answer itself.", "section": "typography" },
+      { "name": "The Flat-Paper Rule", "body": "Surfaces are flat. Never add drop shadows, glows, or bevels to lift an element. Separation comes from the sheet-edge tonal fill and hairline rules, so the whole app continues to read as one continuous sheet under both light and dark.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep deep indigo for the system's voice only — answer ink, status/error, the primary confirm/retry action (the One-Voice Indigo Rule).",
+      "Do render every answer and personalized preview as real vector PKStroke ink, never as a font or Text (the Ink-Not-Type Rule).",
+      "Do hold surfaces flat and build depth from the sheet-edge tonal fill and hairline rules only (the Flat-Paper Rule).",
+      "Do preserve 44pt hit targets and use ViewThatFits (horizontal row → vertical stack) so slips and calibration controls adapt to width and large Dynamic Type.",
+      "Do use 24pt outer insets, 18pt slip corners, and the 44pt body-rule rhythm as the durable spatial constants.",
+      "Do author every color as a light/dark pair so the folio is equally first-class in dark mode.",
+      "Do honor Reduce Motion by swapping the per-stroke reveal for line-level or immediate reveal and replacing slip move transitions with a plain opacity fade.",
+      "Do keep the answer pinned in the question's absolute coordinate space by mirroring the single scrollable surface's offset."
+    ],
+    "donts": [
+      "Don't introduce a message list, card grid, typing field, send box, or any chat-bubble metaphor — the single sheet is both input and output.",
+      "Don't add parchment textures, glows, ornament, or any Harry Potter / franchise imagery, fonts, crests, or sounds (the no-franchise / no-parchment guardrail).",
+      "Don't let the hand write in indigo or let the system speak in graphite; the two voices never swap.",
+      "Don't set the answer as a handwriting font, styled Text, or raster image.",
+      "Don't add drop shadows, bevels, or lift effects to separate surfaces.",
+      "Don't promote a single surface's composition into a global rule; only the durable single-sheet principles above are system-wide."
+    ]
+  }
+}
