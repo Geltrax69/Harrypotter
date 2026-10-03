@@ -58,6 +58,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.livingpage.app
         TARGETED_DEVICE_FAMILY: "2"
         SWIFT_STRICT_CONCURRENCY: complete
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
   LivingPageTests:
     type: bundle.unit-test

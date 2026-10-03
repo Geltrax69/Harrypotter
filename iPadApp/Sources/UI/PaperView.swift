@@ -86,7 +86,7 @@ final class PaperView: UIView {
     private func styleMargins(paper: PaperStyle, dark: Bool) {
         let color: UIColor
         switch paper {
-        case .royal: color = dark ? UIColor(red: 0.88, green: 0.74, blue: 0.45, alpha: 0.35) : UIColor(red: 0.62, green: 0.16, blue: 0.20, alpha: 0.45)
+        case .royal: color = UIColor(red: 0.88, green: 0.74, blue: 0.45, alpha: 0.35)
         case .ruled: color = UIColor(red: 0.85, green: 0.30, blue: 0.32, alpha: dark ? 0.45 : 0.55)
         default: color = .clear
         }
@@ -95,34 +95,54 @@ final class PaperView: UIView {
         margins[1].backgroundColor = paper == .royal ? color : .clear
     }
 
+    /// Notebook-blue cardboard grain, tiled subtly under the rules.
+    private static let grain: UIImage? = UIImage(named: "GrainTile")
+    /// Notebook blue (#2b3e6f), the page base in both appearances.
+    private static let notebookBlue = UIColor(red: 43 / 255, green: 62 / 255, blue: 111 / 255, alpha: 1)
+
     /// One tile of the paper pattern, as a pattern color. Tiles start at the
     /// page origin, so horizontal rules fall exactly on multiples of the grid.
+    /// The tile spans six rules (264pt) to give the cardboard grain room.
     private static func pattern(for paper: PaperStyle, dark: Bool) -> UIColor {
         let s = PageGrid.lineSpacing
+        // Rule-line colors, tuned to read on the notebook blue.
         let line: UIColor
         switch paper {
-        case .royal: line = dark ? UIColor(red: 0.88, green: 0.74, blue: 0.45, alpha: 0.16) : UIColor(red: 0.55, green: 0.40, blue: 0.12, alpha: 0.22)
-        case .ruled: line = dark ? UIColor(red: 0.45, green: 0.62, blue: 0.95, alpha: 0.22) : UIColor(red: 0.30, green: 0.50, blue: 0.85, alpha: 0.30)
-        default: line = dark ? UIColor(white: 1, alpha: 0.13) : UIColor(white: 0, alpha: 0.14)
+        case .royal: line = UIColor(red: 0.88, green: 0.74, blue: 0.45, alpha: 0.20)
+        case .ruled: line = UIColor(red: 0.75, green: 0.82, blue: 0.95, alpha: 0.25)
+        default: line = UIColor(white: 1, alpha: 0.16)
         }
-        let size: CGSize
-        switch paper {
-        case .grid: size = CGSize(width: s / 2, height: s / 2)
-        case .dotted: size = CGSize(width: s / 2, height: s / 2)
-        default: size = CGSize(width: 8, height: s)
-        }
-        let image = UIGraphicsImageRenderer(size: size).image { ctx in
+        let tile = CGSize(width: s * 6, height: s * 6)
+        let image = UIGraphicsImageRenderer(size: tile).image { ctx in
+            // Notebook blue base.
+            notebookBlue.setFill()
+            ctx.fill(CGRect(origin: .zero, size: tile))
+            // Cardboard grain, multiplied on subtly.
+            if let grain {
+                grain.draw(in: CGRect(origin: .zero, size: tile), blendMode: .multiply, alpha: 0.22)
+            }
+            // Rules for the paper style.
             line.setFill()
             switch paper {
             case .royal, .ruled:
-                ctx.fill(CGRect(x: 0, y: size.height - 1, width: size.width, height: 1))
+                for i in 1...6 {
+                    ctx.fill(CGRect(x: 0, y: CGFloat(i) * s - 1, width: tile.width, height: 1))
+                }
             case .grid:
-                ctx.fill(CGRect(x: 0, y: size.height - 1, width: size.width, height: 1))
-                ctx.fill(CGRect(x: size.width - 1, y: 0, width: 1, height: size.height))
+                for i in 1...12 {
+                    let p = CGFloat(i) * s / 2 - 1
+                    ctx.fill(CGRect(x: 0, y: p, width: tile.width, height: 1))
+                    ctx.fill(CGRect(x: p, y: 0, width: 1, height: tile.height))
+                }
             case .dotted:
-                let line2 = line.withAlphaComponent(min(1, line.cgColor.alpha * 2.2))
-                line2.setFill()
-                ctx.cgContext.fillEllipse(in: CGRect(x: size.width - 2, y: size.height - 2, width: 2.4, height: 2.4))
+                let dot = line.withAlphaComponent(min(1, line.cgColor.alpha * 2.2))
+                dot.setFill()
+                for i in 1...12 {
+                    for j in 1...12 {
+                        let p = CGFloat(i) * s / 2, q = CGFloat(j) * s / 2
+                        ctx.cgContext.fillEllipse(in: CGRect(x: p - 2.4, y: q - 2.4, width: 2.4, height: 2.4))
+                    }
+                }
             case .plain:
                 break
             }

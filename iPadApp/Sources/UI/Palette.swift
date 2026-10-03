@@ -36,9 +36,10 @@ enum Palette {
 }
 
 extension Palette {
-    /// Graphite as PencilKit ink. PencilKit inverts ink for dark mode itself,
-    /// so it must receive the light-appearance color, never the dynamic one.
-    static let graphiteInk = UIColor(graphite).resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+    /// Graphite as PencilKit ink. The notebook page is always the dark
+    /// notebook blue, so the hand writes in the light graphite tone in both
+    /// appearances — a fixed (non-dynamic) color so it cannot be adapted away.
+    static let graphiteInk = UIColor(red: 0.878, green: 0.886, blue: 0.902, alpha: 1)
 }
 
 extension Color {

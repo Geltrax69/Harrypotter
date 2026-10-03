@@ -71,31 +71,25 @@ enum AnswerFont: String, CaseIterable, Identifiable {
 
 /// Royal, magical theme roles on top of the base palette.
 extension Palette {
-    /// Burnished gold for chrome accents and answer ink in the dark.
+    /// Burnished gold for chrome accents and answer ink.
     static let gold = Color(
         light: Color(red: 0.55, green: 0.40, blue: 0.12),
         dark: Color(red: 0.88, green: 0.74, blue: 0.45)
     )
-    /// Answer ink: gold leaf by night, royal violet ink by day.
-    static let answerInk = UIColor { t in
-        t.userInterfaceStyle == .dark
-            ? UIColor(red: 0.90, green: 0.76, blue: 0.47, alpha: 1)
-            : UIColor(red: 0.27, green: 0.16, blue: 0.48, alpha: 1)
-    }
+    /// Answer ink: burnished gold on the notebook blue, both appearances.
+    /// (The old royal-violet light ink is unreadable on the blue page.)
+    static let answerInk = UIColor(red: 0.90, green: 0.76, blue: 0.47, alpha: 1)
     /// The glow around freshly written answer ink.
-    static let answerGlow = UIColor { t in
-        t.userInterfaceStyle == .dark
-            ? UIColor(red: 1.0, green: 0.82, blue: 0.45, alpha: 0.55)
-            : UIColor(red: 0.55, green: 0.40, blue: 0.85, alpha: 0.25)
-    }
-    /// Midnight-velvet sheet (dark) / warm vellum (light).
+    static let answerGlow = UIColor(red: 1.0, green: 0.82, blue: 0.45, alpha: 0.45)
+    /// Notebook blue (#2b3e6f) in both appearances, with a cardboard grain
+    /// laid over it by PaperView.
     static let royalSheet = Color(
-        light: Color(red: 0.965, green: 0.937, blue: 0.871),
-        dark: Color(red: 0.075, green: 0.063, blue: 0.118)
+        light: Color(red: 43 / 255, green: 62 / 255, blue: 111 / 255),
+        dark: Color(red: 43 / 255, green: 62 / 255, blue: 111 / 255)
     )
     static let royalSheetGlow = Color(
-        light: Color(red: 1.0, green: 0.98, blue: 0.93),
-        dark: Color(red: 0.17, green: 0.12, blue: 0.27)
+        light: Color(red: 74 / 255, green: 95 / 255, blue: 150 / 255),
+        dark: Color(red: 74 / 255, green: 95 / 255, blue: 150 / 255)
     )
 }
 
