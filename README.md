@@ -1,189 +1,121 @@
 # Living Page
 
-Living Page is a single-page, Apple Pencil-first question-and-answer notebook for
-iPad. You handwrite one question, confirm its on-device recognition, and a
-concise answer writes itself below the question as genuine vector ink — in a
-preset "hand" or a style derived from your own Apple Pencil samples. The answer
-is display-only after it appears. Raw
-handwriting and the personal style profile never leave the device; only a small
-confirmed request crosses the network.
+> ## Status: 🟡 In Progress
+>
+> <progress value="65" max="100"></progress>
+> **Progress: 65%** — iPad app and Fastify backend both build; core notebook flow exists but the vector-ink answer engine is orphaned, iPad tests don't compile, and no physical-device run has happened.
 
-## Current status (honest)
+<p align="center">
+  <img src="banner.webp" alt="Living Page banner" width="100%" />
+</p>
 
-This is a **local prototype**, not a shipped product.
+![Swift](https://img.shields.io/badge/Swift-5.0-F05138?logo=swift&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Fastify](https://img.shields.io/badge/Fastify-000000?logo=fastify&logoColor=white)
 
-- The iPad app builds and its unit tests pass on the iOS 27 Simulator.
-- The backend runs in deterministic **mock mode** out of the box and passes its
-  test suite, typecheck, and build.
-- **No real Kiro credential, endpoint, hosting, logo, font, or handwriting
-  dataset has been supplied.** The real Kiro path is implemented but
-  **environment-gated and unverified end to end** — no real Kiro smoke has been
-  run.
-- **Physical-device behavior is unverified.** Everything device-specific
-  (Pencil-only input, file protection, Keychain, live network) is gated behind
-  the checklist in `docs/PHYSICAL_DEVICE_CHECKLIST.md` and has not been claimed
-  as validated.
-- Hosting is deliberately undecided; no cloud infrastructure is created.
+## What it is
 
-## Monorepo map
+Living Page is a monorepo for a Pencil-first Q&A notebook on iPad, backed by
+a small Fastify/TypeScript API. You handwrite a question with Apple Pencil,
+the app recognizes it on-device, and a concise AI-generated answer is written
+below it as handwriting-style text. Raw handwriting and the personal style
+profile never leave the device; only a small confirmed request crosses the
+network (`POST /v1/answers` with bearer auth — 4 wire fields:
+requestId/question/locale/maxWords). The backend ships a deterministic mock
+answer provider by default and an OpenRouter provider gated by
+`OPENROUTER_API_KEY`.
 
-```
-LivingPage/
-├── PRODUCT.md                     Product definition and principles
-├── README.md                      This file
-├── .gitignore                     Root ignore policy (env, build, generated project)
-├── docs/
-│   ├── API.md                     POST /v1/answers request/response/errors + curl
-│   ├── SECURITY.md                Threat boundaries and data inventory
-│   └── PHYSICAL_DEVICE_CHECKLIST.md  Reproducible on-device validation steps
-├── Backend/                       TypeScript Fastify service (mock | Kiro CLI broker)
-│   ├── src/                       app, config, schema, providers, util
-│   ├── test/                      node --test suites
-│   ├── scripts/smoke-real.ts      GATED real-Kiro smoke (not run here)
-│   ├── .env.example               Placeholder env template (no real values)
-│   └── README.md                  Backend setup & operations
-└── iPadApp/                       SwiftUI/PencilKit iPad app
-    ├── project.yml                XcodeGen source of truth (generates .xcodeproj)
-    ├── Sources/                   App, Networking, Ink, Recognition, Calibration, UI
-    ├── Tests/                     Swift Testing unit tests
-    ├── UITests/                   XCUITest UI tests
-    └── README.md                  iPad app setup & operations
-```
+## What works (verified)
 
-## Architecture & data flow
+Verified by reading the code; the backend was also built and typechecked on
+this machine (Swift can't be compiled here):
 
-```
-┌─────────────────────────── iPad (device) ───────────────────────────┐
-│  Apple Pencil ink → PencilKit on-device recognition → inline confirm │
-│  Confirmed text + locale + requestId + maxWords  ─────────┐          │
-│  Drawings & personal handwriting profile stay LOCAL       │          │
-│  (Application Support, file-protected, backup-excluded)   │          │
-└───────────────────────────────────────────────────────────┼─────────┘
-                                                              │ HTTPS (prod) /
-                                                              │ loopback HTTP (Simulator)
-                                                              │ Authorization: Bearer <device token>
-                                                              ▼
-┌─────────────────────── Backend (TypeScript) ────────────────────────┐
-│  POST /v1/answers → auth → strict schema → idempotency → provider    │
-│  MockAnswerProvider (default)  OR  KiroCliAnswerProvider (gated)      │
-│  KIRO_API_KEY is SERVER-ONLY and never sent to the device            │
-└───────────────────────────────────────────────────────────┬─────────┘
-                                                              │ stdin prompt, zero-tool
-                                                              │ isolated agent, shell:false
-                                                              ▼
-                                                        Kiro CLI (headless)
-```
+- ✅ Backend builds and typechecks — `npm install`, `npm run build`, `npm run typecheck` all pass on this machine
+- ✅ Backend env validation — server refuses to start without `DEVICE_AUTH_TOKEN` (verified: `fatal: Invalid environment configuration: DEVICE_AUTH_TOKEN: Required`)
+- ✅ Mock + OpenRouter answer providers with a provider factory (`Backend/src/providers/`) — read the code; OpenRouter path is a real REST client
+- ✅ iPad app structure is complete: `PageViewModel` (phases: writing → confirming → rendering → answered), PencilKit input, on-device handwriting recognition hooks, HTTP answer client, calibration flow with personal handwriting profile, dark-mode gold-ink theme (`iPadApp/Sources/`)
+- ✅ Notebook theming landed (commit `434d8db`): app icon, `#2b3e6f` cardboard-grain page, legibility fixes
+- ⚠️ Backend test suite does **not** run on this machine — `npm test` crashes before any test executes because the deprecated `--loader ts-node/esm` setup is incompatible with Node v24 (toolchain issue, not a test assertion)
+- ⚠️ Known gaps found in code (all unverified-on-device):
+  - The vector-ink answer engine (`Sources/Ink/AnswerComposer`, `InkStrokeBuilder`, `AnswerInkAnimator`, `BaseAlphabet`) is fully built but **orphaned** — live answers render as bundled-font text via `InkCanvasView`'s `AnswerFont`, not as generated ink strokes
+  - The iPad unit tests and UI tests **don't compile against the current sources** (e.g. tests pass `styleSettings`/`profileStore`/`animator` args that `PageViewModel.init` no longer takes; stale `ScrollSyncCoordinator` references)
+  - `Backend/README.md` documents a **Kiro CLI answer provider** that does not exist in code — the factory only has `mock` and `openrouter`
+  - Production runs with `autoAsk: true` and the `ConfirmationSlip` view is defined but never presented
+  - Several bundled fonts are flagged personal-use/demo-only (`isFreeLicense=false` in `PageStyle.swift`)
 
-Only four fields ever leave the device: `requestId`, `question`, `locale`,
-`maxWords`. See `docs/API.md` and `docs/SECURITY.md`.
+## Tech stack
 
-## Prerequisites
+| Layer    | Tech                                      |
+| -------- | ----------------------------------------- |
+| iPad app | Swift, SwiftUI, PencilKit (XcodeGen `project.yml`) |
+| Backend  | TypeScript, Fastify 4, Zod, Pino          |
+| AI       | OpenRouter REST (gated by `OPENROUTER_API_KEY`); deterministic mock default |
+| Tests    | Swift Testing (`iPadApp/Tests`), `node --test` (Backend) |
 
-- **Xcode** with the **iPadOS 27** SDK/Simulator runtime installed.
-- An **Apple Pencil** and a compatible iPad — required only for physical-device
-  testing (the Simulator flow uses injected synthetic input).
-- **Node.js 20** (≥ 20.6; uses the built-in `--env-file`, no `dotenv`).
-- **XcodeGen** (`brew install xcodegen`) — the `.xcodeproj` is generated.
-- An **eligible Kiro account / API key** — required only to exercise the real
-  provider. The prototype is fully usable in mock mode without one.
+## How to run
 
-## Quick start — mock backend + iPad Simulator
-
-1. Start the backend in mock mode:
-
-   ```bash
-   cd Backend
-   npm install
-   cp .env.example .env          # set DEVICE_AUTH_TOKEN to a ≥16-char value
-   npm start                     # serves http://localhost:8080 in mock mode
-   ```
-
-2. Generate and open the iPad app:
-
-   ```bash
-   cd ../iPadApp
-   xcodegen generate
-   open LivingPage.xcodeproj
-   ```
-
-3. Select an **iPad simulator running iOS 27** and Run. On the Simulator the
-   default base URL is `http://localhost:8080` (loopback cleartext is allowed
-   for development only). Bootstrap a device token via the Run scheme
-   environment variables below.
-
-## Xcode Run scheme environment variables
-
-Set these under **Product → Scheme → Edit Scheme… → Run → Arguments →
-Environment Variables**. None are committed; none contain real secrets.
-
-| Variable                              | Purpose                                                                 |
-|---------------------------------------|-------------------------------------------------------------------------|
-| `LIVINGPAGE_BASE_URL`                 | Backend origin. HTTPS anywhere; cleartext HTTP only for `localhost`/`127.0.0.1`/`::1`. Invalid/remote-cleartext/credentialed URLs safely fall back to `http://localhost:8080`. |
-| `LIVINGPAGE_BOOTSTRAP_TOKEN`          | One-time device bearer token to persist into the Keychain. Must be **≥ 16 chars**. Ignored if a credential already exists (unless resetting). |
-| `LIVINGPAGE_RESET_DEVICE_CREDENTIAL`  | Set to `1` for a **single** launch to clear the stored credential and re-bootstrap from `LIVINGPAGE_BOOTSTRAP_TOKEN`. Remove afterward. |
-
-The device token is never logged, printed, or shown in UI. Ordinary launches
-never overwrite an existing credential.
-
-### Exact token-name mapping
-
-The device token the app presents and the backend token it is checked against
-must be the **same value**, configured under different names on each side:
-
-| Side     | Name                          | Where set                                  |
-|----------|-------------------------------|--------------------------------------------|
-| iPad app | `LIVINGPAGE_BOOTSTRAP_TOKEN`  | Xcode Run scheme env (one-time bootstrap)  |
-| Backend  | `DEVICE_AUTH_TOKEN`           | `Backend/.env` (loaded via `--env-file`)   |
-
-`LIVINGPAGE_BOOTSTRAP_TOKEN` (device) **must equal** `DEVICE_AUTH_TOKEN`
-(server). The Kiro key (`KIRO_API_KEY`) is **server-only** and is never placed
-on the device.
-
-## Switching to the real Kiro provider
-
-Real Kiro requires an eligible account and is **not verified here**.
-
-1. In `Backend/.env`, set `PROVIDER=kiro` and supply `KIRO_API_KEY` (and, if
-   needed, `KIRO_CLI_PATH` / `KIRO_MODEL`). Without a key the service stays in
-   mock mode by design.
-2. The gated smoke script exists but is intentionally **not run** in this task:
-
-   ```bash
-   # Requires SMOKE_REAL=1 and a real key in .env. NOT run here.
-   cd Backend && SMOKE_REAL=1 npm run smoke:real
-   ```
-
-## Test commands
+Backend commands were tested on this machine (Node v24; Swift cannot be
+compiled here — iPad steps follow the project's own docs):
 
 ```bash
-# Backend
-cd Backend && npm run typecheck && npm test && npm run build
-
-# iPad app (iOS 27 Simulator; pick a booted/available iOS 27 iPad)
-cd iPadApp && xcodegen generate
-xcodebuild test -project LivingPage.xcodeproj -scheme LivingPage \
-  -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5)' \
-  -only-testing:LivingPageTests
+cd Backend
+npm install
+npm run build        # tsc → dist/
+npm run typecheck    # tsc --noEmit
+# npm test           # currently broken on Node 24 (ts-node loader incompatibility)
 ```
 
-## No-secret rules
+To run the server (needs env): create `.env` with `DEVICE_AUTH_TOKEN`, then
+`npm start`. In mock mode no API key is needed.
 
-- Never commit real tokens, keys, endpoints, or `.env` files. Only `*.env.example`
-  templates are tracked.
-- `KIRO_API_KEY` is server-only; it never appears on the device or in the app.
-- The device bearer token is never logged or displayed.
-- Placeholders in docs (e.g. `REPLACE_WITH_...`, `$DEVICE_AUTH_TOKEN`) are not
-  real values.
+iPad app (on a Mac with Xcode — not verifiable here):
 
-## Known physical-device gates
+```bash
+cd iPadApp
+xcodegen generate    # then open the .xcodeproj and build/run on iPad simulator
+```
 
-None of the following are validated; see `docs/PHYSICAL_DEVICE_CHECKLIST.md`:
+## Screenshots
 
-- Pencil-only question input with finger-only scrolling.
-- Idle-pause recognition (~1.5s), cancel, and stale-recognition handling.
-- Handwriting recognition error rate targets.
-- Real Apple Pencil force/tilt capture and per-stroke render state.
-- File-protection and Keychain behavior on real hardware.
-- Live network, retry, and offline recovery against a reachable backend over
-  **HTTPS** (a physical iPad requires HTTPS; loopback cleartext is Simulator-only).
-- Dark mode, VoiceOver, Reduce Motion, and rotation on device.
+No screenshots ship with the repo. The banner at the top of this README is
+the visual summary.
+
+## What you can add more
+
+- [ ] Rewire the orphaned vector-ink engine into answer rendering — or delete it; the README claims answers render as "genuine vector ink" but they currently render as font text
+- [ ] Fix the iPad test suite so it compiles against the current `PageViewModel` init (stale `styleSettings`/`profileStore`/`animator` args, missing `ScrollSyncCoordinator`)
+- [ ] Fix or replace the backend test runner (ts-node `--loader` is deprecated and crashes on Node 24) so `npm test` actually runs
+- [ ] Reconcile the docs: `Backend/README.md` describes a Kiro CLI provider that isn't in the code — update docs or re-add the provider
+- [ ] Decide on `autoAsk: true` in production and either wire up `ConfirmationSlip` or remove it
+- [ ] Resolve font licensing: several bundled fonts are personal-use/demo-only — gate or replace before any distribution
+- [ ] Run the physical-device checklist (`docs/PHYSICAL_DEVICE_CHECKLIST.md`) — nothing device-specific has been validated
+- [ ] Add a CI workflow running backend build/typecheck on push (no `.github/workflows` yet)
+
+## Project structure
+
+```
+├── Backend/
+│   ├── src/
+│   │   ├── server.ts / app.ts / config.ts   # Fastify app, zod env validation
+│   │   ├── schema.ts / text.ts              # /v1/answers wire models
+│   │   └── providers/                       # MockAnswerProvider, OpenRouterAnswerProvider, factory
+│   └── test/                                # http / provider / redaction / unit tests
+├── iPadApp/
+│   ├── project.yml                          # XcodeGen project
+│   └── Sources/
+│       ├── App/                             # LivingPageApp, AppEnvironment (wires view model, autoAsk:true)
+│       ├── Model/                           # PageViewModel (phase machine)
+│       ├── UI/                              # PageView, InkCanvasView, CalibrationView, PaperView…
+│       ├── Ink/                             # vector-ink engine (currently orphaned)
+│       ├── Recognition/                     # on-device handwriting recognition
+│       ├── Calibration/                     # personal handwriting profile
+│       ├── Networking/                      # HTTPAnswerClient, wire models
+│       └── Fonts/                           # 10 bundled handwriting fonts
+├── DESIGN.md / PRODUCT.md                   # product design + IP rules (no Harry Potter branding)
+├── fonts/                                   # (repo-level font assets)
+├── docs/PHYSICAL_DEVICE_CHECKLIST.md        # device validation checklist
+└── banner.webp                              # this README's banner
+```
+
+---
+*README written after code audit on 2026-10-08.*
